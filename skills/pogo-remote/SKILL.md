@@ -1,6 +1,6 @@
 ---
 name: pogo-remote
-description: Use when a task involves general POGO simulation work: MATLAB-based model construction, geometry/material/excitation setup, consistency checks, headless remote generation of `.pogo-inp`, remote POGO execution, retrieval or remote processing of `.pogo-hist`/`.pogo-field`, and iterative or batch simulation studies. Prefer local model editing and validation before remote execution.
+description: "Use when a task involves general POGO simulation work: MATLAB-based model construction, geometry/material/excitation setup, consistency checks, headless remote generation of `.pogo-inp`, remote POGO execution, retrieval or remote processing of `.pogo-hist`/`.pogo-field`, and iterative or batch simulation studies. Prefer local model editing and validation before remote execution."
 ---
 
 # POGO Remote
