@@ -65,6 +65,7 @@ skills/
 adapters/
   claude-code/
     agents/
+    commands/
 
 scripts/
   install.sh
@@ -104,8 +105,8 @@ This repo is organized so that one source tree can be reused across:
 | Tool | Format used from this repo | Notes |
 |---|---|---|
 | Codex | `skills/*/SKILL.md` folders | install into `~/.codex/skills/` |
-| OpenClaw | `skills/*/SKILL.md` folders | install into `~/.agents/skills/` or run from a workspace that loads `skills/` |
-| Claude Code | `adapters/claude-code/agents/*.md` | installed as Claude Code subagents |
+| OpenClaw | `skills/*/SKILL.md` folders | install into `~/.agents/skills/` or another AgentSkills-compatible path |
+| Claude Code | `adapters/claude-code/agents/*.md` and `adapters/claude-code/commands/*.md` | installed as Claude Code subagents and slash commands |
 
 ---
 
@@ -182,6 +183,12 @@ This installs into:
 ~/.agents/skills/
 ```
 
+If your OpenClaw setup prefers another AgentSkills-compatible directory, use:
+
+```bash
+./scripts/install.sh openclaw --mode symlink --target-dir /your/preferred/skills/path
+```
+
 ### Copy mode
 
 ```bash
@@ -203,10 +210,11 @@ folder.
 ## Install for Claude Code
 
 Claude Code does not use the same `SKILL.md` folder format directly.
-This repo provides adapted Claude Code agent files in:
+This repo provides adapted Claude Code files in:
 
 ```text
 adapters/claude-code/agents/
+adapters/claude-code/commands/
 ```
 
 ### Recommended
@@ -215,10 +223,11 @@ adapters/claude-code/agents/
 ./scripts/install.sh claude-code --mode symlink
 ```
 
-This installs into:
+This installs:
 
 ```text
 ~/.claude/agents/
+~/.claude/commands/
 ```
 
 ### Copy mode
@@ -233,12 +242,14 @@ Copy or symlink:
 
 ```text
 adapters/claude-code/agents/*.md
+adapters/claude-code/commands/*.md
 ```
 
 to:
 
 ```text
 ~/.claude/agents/
+~/.claude/commands/
 ```
 
 ---

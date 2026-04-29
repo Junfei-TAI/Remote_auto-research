@@ -86,14 +86,26 @@ case "$TARGET" in
     echo "Installed OpenClaw/AgentSkills-compatible skills to: $TARGET_DIR"
     ;;
   claude-code)
-    SRC_ROOT="$REPO_ROOT/adapters/claude-code/agents"
-    TARGET_DIR="${CUSTOM_TARGET_DIR:-$HOME/.claude/agents}"
-    mkdir -p "$TARGET_DIR"
-    for agent_file in "$SRC_ROOT"/*.md; do
+    SRC_ROOT_AGENTS="$REPO_ROOT/adapters/claude-code/agents"
+    SRC_ROOT_COMMANDS="$REPO_ROOT/adapters/claude-code/commands"
+    if [ -n "$CUSTOM_TARGET_DIR" ]; then
+      AGENT_DIR="$CUSTOM_TARGET_DIR/agents"
+      COMMAND_DIR="$CUSTOM_TARGET_DIR/commands"
+    else
+      AGENT_DIR="$HOME/.claude/agents"
+      COMMAND_DIR="$HOME/.claude/commands"
+    fi
+    mkdir -p "$AGENT_DIR" "$COMMAND_DIR"
+    for agent_file in "$SRC_ROOT_AGENTS"/*.md; do
       [ -f "$agent_file" ] || continue
-      install_path "$agent_file" "$TARGET_DIR/$(basename "$agent_file")"
+      install_path "$agent_file" "$AGENT_DIR/$(basename "$agent_file")"
     done
-    echo "Installed Claude Code agent files to: $TARGET_DIR"
+    for cmd_file in "$SRC_ROOT_COMMANDS"/*.md; do
+      [ -f "$cmd_file" ] || continue
+      install_path "$cmd_file" "$COMMAND_DIR/$(basename "$cmd_file")"
+    done
+    echo "Installed Claude Code agent files to: $AGENT_DIR"
+    echo "Installed Claude Code command files to: $COMMAND_DIR"
     ;;
   *)
     echo "Unsupported target: $TARGET" >&2
