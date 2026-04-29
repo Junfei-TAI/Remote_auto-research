@@ -13,3 +13,5 @@
 *.tmp
 *.asv
 __pycache__/
+*.pyc
+*.pyo

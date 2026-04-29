@@ -119,9 +119,14 @@ Agents using these workflows should:
 skills/
   remote-auto-research/        umbrella router skill
   general-code-remote/         generic remote execution skill
+    references/
+      ssh_onboarding.md        SSH setup flow (no secrets stored)
+    templates/
+      ssh_config.example       Safe SSH config template with placeholders
   pogo-remote/                 POGO workflow skill
     assets/
-    references/
+      run_pogo.sh              Standard remote POGO runner template
+    references/                Modeling paradigms, recipes, post-processing
     examples/
       matlab_multilayer_composite/
       matlab_polycrystal_porosity_textured/
@@ -129,11 +134,11 @@ skills/
 
 adapters/
   claude-code/
-    agents/
-    commands/
+    agents/                    Subagent files (.md with YAML frontmatter)
+    commands/                  Slash command files (.md with YAML frontmatter)
 
 scripts/
-  install.sh
+  install.sh                   Installs for codex / openclaw / claude-code
 ```
 
 ---
@@ -177,14 +182,14 @@ This repo is organized so that one source tree can be reused across:
 
 ## Install / pull methods
 
-## 1. Clone the repo
+### 1. Clone the repo
 
 ```bash
 git clone git@github.com:Junfei-TAI/Remote_auto-research.git
 cd Remote_auto-research
 ```
 
-## 2. Update later
+### 2. Update later
 
 All three tools can use the same repo update method:
 

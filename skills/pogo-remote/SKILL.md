@@ -83,6 +83,7 @@ Do not treat the example files as fixed end-user deliverables. Treat them as **s
   - start from `examples/matlab_polycrystal_porosity_textured/TexturedPolycrystal_Porosity_Workflow_Skeleton.m` for a cleaned paradigm-2 entrypoint
   - then inspect `examples/matlab_polycrystal_porosity_textured/EA2pogoINP_2D_FCC_SSalloys_textured.m`
   - use `examples/matlab_polycrystal_porosity_textured/material_packing_reference.m` for corrected anisotropic POGO packing
+  - **Note:** this family is a strong reference scaffold for workflow structure and material packing patterns, not a guaranteed self-contained turnkey example — some external dependencies (Neper output, texture-specific preprocessing) may need to be supplied
 
 - If you need a **starting skeleton for complex geometry with simple material behavior**:
   - start with `examples/matlab_complex_geometry_skeleton/ComplexGeometry_2D_Polygon_Skeleton.m`
