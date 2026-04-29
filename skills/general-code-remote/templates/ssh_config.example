@@ -1,0 +1,8 @@
+Host <alias>
+    HostName <server-ip-or-hostname>
+    User <username>
+    Port 22
+    IdentityFile ~/.ssh/<private-key-file>
+    IdentitiesOnly yes
+    ServerAliveInterval 30
+    ServerAliveCountMax 3

@@ -1,0 +1,15 @@
+*.pogo-inp
+*.pogo-block
+*.pogo-hist
+*.pogo-field
+*.dat
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.fig
+*.mat
+*.log
+*.tmp
+*.asv
+__pycache__/
