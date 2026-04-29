@@ -16,6 +16,71 @@ It currently provides two main reusable modules:
 
 ---
 
+## Workflow diagrams
+
+### Overall remote-research workflow
+
+```mermaid
+flowchart TD
+    A[Research task arrives] --> B{Task type?}
+    B -->|Generic remote code| C[general-code-remote]
+    B -->|MATLAB / POGO simulation| D[pogo-remote]
+
+    C --> C1[Edit and debug locally]
+    C1 --> C2{Local runtime available?}
+    C2 -->|Yes| C3[Run small local validation]
+    C2 -->|No| C4[Prepare remote fallback]
+    C3 --> C5[Upload via SSH / SCP / rsync]
+    C4 --> C5
+    C5 --> C6[Run remotely]
+    C6 --> C7[Process results locally or remotely]
+    C7 --> C8{Validated?}
+    C8 -->|No| C1
+    C8 -->|Yes| C9[Scale up / batch run]
+
+    D --> D1[Clarify modeling intent]
+    D1 --> D2{Which POGO paradigm?}
+    D2 -->|Layered composite| D3[Use multilayer composite family]
+    D2 -->|Polycrystal / porosity / inclusions| D4[Use paradigm-2 family]
+    D2 -->|Complex geometry| D5[Use geometry skeleton family]
+    D3 --> D6[Adapt model locally]
+    D4 --> D6
+    D5 --> D6
+    D6 --> D7[Preview / consistency check]
+    D7 --> D8[Generate one representative pogo-inp]
+    D8 --> D9[Run remotely]
+    D9 --> D10[Post-process]
+    D10 --> D11{Validated?}
+    D11 -->|No| D6
+    D11 -->|Yes| D12[Expand to batch study]
+```
+
+### POGO automated research loop
+
+```mermaid
+flowchart TD
+    P1[Research question] --> P2[Classify modeling paradigm]
+    P2 --> P3[Choose nearest example family]
+    P3 --> P4[Copy example into working directory]
+    P4 --> P5[Modify geometry / materials / excitation / defects]
+    P5 --> P6[Add preview plots and sanity checks]
+    P6 --> P7{Model credible?}
+    P7 -->|No| P5
+    P7 -->|Yes| P8[Generate one pogo-inp]
+    P8 --> P9[Run headless MATLAB locally or remotely]
+    P9 --> P10[Run run_pogo.sh remotely]
+    P10 --> P11[Collect pogo-hist / pogo-field]
+    P11 --> P12[Run post-processing]
+    P12 --> P13{Scientific signal usable?}
+    P13 -->|No| P5
+    P13 -->|Yes| P14{Need more cases?}
+    P14 -->|No| P15[Summarize result]
+    P14 -->|Yes| P16[Expand parameter sweep / batch run]
+    P16 --> P10
+```
+
+---
+
 ## What this repo is for
 
 This repo is meant to give agents a reusable **remote research operating pattern**, not just one-off prompts.
