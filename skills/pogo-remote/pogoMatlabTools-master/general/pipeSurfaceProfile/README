@@ -1,0 +1,13 @@
+pipeSurfaceProfile.m can be used to modify the surface profile of a pipe mesh generated using genGridPipe.m.
+The profile is loaded from a csv for both the inner and outer surfaces. The profile has nz columns and nc rows.
+The profile may be given as a deviation from the original surface or defined as a radius at each location.
+
+The algorithm loops through each (nz,nc) position and modifies the node positions. The maximum deformation of
+elements can be set and controls the number of elements that must be modified to make the surface to conform to
+the desired profile. For each surface point the deformed elements are deformed by the same amount. If the number
+of elements that must be deformed to create both surfaces is more than the total number of elements through the
+wall thickness an error is thrown.
+
+This process minimises the number of elements which must be deformed to generate the surface. This reduces the
+number of unique element stiffness values that pogo must store and therefore reduces the memory required for
+the model.

@@ -52,16 +52,22 @@ If the user leaves some details unspecified, propose a reasonable modeling plan 
    - otherwise run headless on the remote server
    - for headless Linux MATLAB, prefer:
      `QT_QPA_PLATFORM=offscreen matlab -batch ...`
+   - save generation summaries: mesh size, material properties, excitation, receiver/source counts, expected history files, and preview paths
 
 4. **Run POGO remotely**
    - create or reuse `run_pogo.sh`
    - run block generation and solve stages
    - verify expected outputs exist
+   - use the correct solver pair:
+     - 2D: `pogoBlock <file.pogo-inp>` then `pogoSolve <file.pogo-inp>`
+     - 3D: `pogoBlockGreedy3d <file.pogo-inp>` then `pogoSolve3d <file.pogo-inp>`
+   - for batch jobs, skip case directories that already contain the expected number of `.pogo-hist` files
 
 5. **Post-process**
    - process remotely or download locally depending on data size and tooling
    - prepare scripts around the actual physics question, not just generic plots
    - use results to decide iteration vs. batch expansion
+   - for multi-shot or full-aperture histories, post-process on the remote host first; retrieve compact tables/figures/reports before raw histories
 
 6. **Scale only after validation**
    - once one case is confirmed, expand to multiple defects / frequencies / geometries / parameter sweeps
@@ -108,6 +114,14 @@ Do not treat the example files as fixed end-user deliverables. Treat them as **s
 - If you need the **standard remote solver script**:
   - copy or generate `assets/run_pogo.sh` in the remote run directory
 
+- If you need **lower-level POGO MATLAB I/O, meshing, absorbing-boundary, field, block, or history utilities**:
+  - inspect `pogoMatlabTools-master/`
+  - useful subfolders:
+    - `loadSave/`: `savePogoInp`, `loadPogoHist`, `loadPogoField`, `loadPogoBlock`, `loadPogoInp`
+    - `generate/`: `genGrid2D`, `genGrid3D`, `addAbsBound`, `addGeneralAbsBound`, `getNearestNode`, `getLineNodes`, `setNtDt`
+    - `visual/`: `plotPogoField`, `viewPogoField`, `plotMesh`, `viewPogoBlock`
+  - treat these as reusable tools, not as fixed examples
+
 ### Tool map
 
 - `MultilayerComposite_PulseEcho_Demo.m`
@@ -135,6 +149,15 @@ Do not treat the example files as fixed end-user deliverables. Treat them as **s
 
 - `toolbox/loadPogoHist.m`
   - reads POGO history output for signal analysis
+
+- `pogoMatlabTools-master/loadSave/loadPogoHist.m`
+  - alternative history reader; useful when the example toolbox reader is insufficient
+
+- `pogoMatlabTools-master/generate/addAbsBound.m`, `addGeneralAbsBound.m`
+  - helpers for absorbing-boundary setup
+
+- `pogoMatlabTools-master/generate/genGrid2D.m`, `genGrid3D.m`
+  - structured grid helpers for lightweight custom meshing
 
 - `toolbox/plot3DOutline.m`, `toolbox/getElCents.m`, `toolbox/genGrid3D.m`
   - geometry inspection and helper utilities
@@ -176,6 +199,12 @@ When starting a new POGO task, use this sequence:
 
 7. Only after the model is credible, generate `.pogo-inp` and run remotely.
 
+8. After a successful run, do not stop at "solver completed":
+   - verify expected hist/field counts
+   - inspect one representative waveform or field snapshot
+   - generate a compact summary table and figure
+   - document whether the result validates the model assumption
+
 ## How to map a research question to code edits
 
 Use this mental mapping:
@@ -209,6 +238,24 @@ Use this mental mapping:
   - only after one case is validated
   - expand loops over defects, frequencies, thicknesses, or geometries
   - keep filenames deterministic and parameter-encoded
+
+- **Need FMC / phased-array data**
+  - use `model.shots{shot_idx}` to define transmit events in one `.pogo-inp`
+  - expect POGO to emit one `.pogo-hist` per shot
+  - assemble histories as `FMC[tx, rx, time]` in post-processing
+  - include shot/receiver mappings in metadata or sidecar `.mat`/CSV files
+
+- **Need finite-width array elements**
+  - make TX and RX aperture definitions explicit
+  - TX may use multiple nodes with equal force or physically motivated weights
+  - RX can store all aperture nodes in a measurement set, then average or coherently combine in post-processing
+  - record node counts per source/receiver aperture in the generation summary
+
+- **Need imaging**
+  - do not assume a single bulk velocity unless validated
+  - split travel-time models by physical segment when needed: delay line, base/body, layer stack, defect path
+  - calibrate using validation receivers or known baseline echoes before interpreting TFM
+  - if TFM is ambiguous, add simpler diagnostics: diagonal A-scan mapping, pitch-catch channel maps, time-window energies, matched filtering, polarity, and defect/intact lateral contrasts
 
 ## Consistency-check expectations
 
@@ -244,6 +291,39 @@ Choose post-processing based on the physics question:
 
 The included post-processing demo is only a starter, not a full analysis framework.
 
+### Large history policy
+
+POGO histories can become tens or hundreds of GB when using many shots, long `nt`, many receiver nodes, or full-aperture measurement sets.
+
+Default policy:
+
+- keep `.pogo-hist` on the remote server
+- run Python/MATLAB post-processing remotely
+- download compact outputs first
+- only pull raw histories for a small debug subset
+
+For full-aperture FMC, prefer:
+
+- store raw aperture-node histories in POGO
+- average or combine aperture traces in post-processing
+- save compact `FMC[tx, rx, time]` arrays only if they are small enough and genuinely useful
+- commit scripts and tables/figures, not raw histories
+
+### Imaging fallback hierarchy
+
+When an image is hard to interpret:
+
+1. Verify geometry/source/receiver preview.
+2. Inspect raw and envelope A-scans for representative channels.
+3. Compare expected and measured travel times.
+4. Check whether the selected time window corresponds to the intended physical echo.
+5. Try matched filtering for long tonebursts.
+6. Use channel-level maps before trusting full TFM:
+   - diagonal pulse-echo A-scan mapping
+   - pitch-catch maps by offset
+   - time-window energy/peak/polarity metrics
+7. Only then refine TFM or branch/mode-specific imaging.
+
 ## Included resources
 
 - `assets/run_pogo.sh` — standard remote runner template
@@ -254,3 +334,5 @@ The included post-processing demo is only a starter, not a full analysis framewo
 - `references/workflow_recipes.md` — common simulation workflow recipes
 - `references/postprocess_patterns.md` — common post-processing patterns
 - `references/automated_research_loop.md` — iteration, validation, and scale-up strategy
+- `references/pogo_fmc_and_postprocess_patterns.md` — FMC, full-aperture receivers, calibrated imaging, and A-scan mapping patterns
+- `pogoMatlabTools-master/` — additional POGO MATLAB tools for I/O, grid generation, absorbing boundaries, and visualization
