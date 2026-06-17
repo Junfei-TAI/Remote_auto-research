@@ -68,6 +68,7 @@ If the user leaves some details unspecified, propose a reasonable modeling plan 
    - prepare scripts around the actual physics question, not just generic plots
    - use results to decide iteration vs. batch expansion
    - for multi-shot or full-aperture histories, post-process on the remote host first; retrieve compact tables/figures/reports before raw histories
+   - for large `.pogo-field` files, prefer headless conversion to ParaView-readable artifacts on the remote host; avoid GUI conversion for multi-million-node 3D fields
 
 6. **Scale only after validation**
    - once one case is confirmed, expand to multiple defects / frequencies / geometries / parameter sweeps
@@ -113,6 +114,11 @@ Do not treat the example files as fixed end-user deliverables. Treat them as **s
 
 - If you need the **standard remote solver script**:
   - copy or generate `assets/run_pogo.sh` in the remote run directory
+
+- If you need to **convert `.pogo-field` to ParaView-readable wavefield files**:
+  - use `pogoMatlabTools-master/visual/export_pogo_field_xdmf.m` after the solver finishes
+  - run it headlessly with MATLAB and add both `visual/` and `loadSave/` to the path, or keep the bundled `pogoMatlabTools-master` layout intact
+  - when `model.fieldStoreNodes` was used, export a temporal point-cloud XDMF rather than full element connectivity
 
 - If you need **lower-level POGO MATLAB I/O, meshing, absorbing-boundary, field, block, or history utilities**:
   - inspect `pogoMatlabTools-master/`
@@ -165,6 +171,11 @@ Do not treat the example files as fixed end-user deliverables. Treat them as **s
 - `postprocess/PostProcess_PulseEcho_Hist_Demo.m`
   - minimal history-processing starter
   - extend it to match the physics question
+
+- `pogoMatlabTools-master/visual/export_pogo_field_xdmf.m`
+  - converts `.pogo-field` to ParaView-readable `.xdmf` plus raw `.bin` files
+  - exports sampled-node fields as temporal `Polyvertex` point-cloud data with displacement vectors and magnitudes
+  - writes binary arrays in XDMF row-major order; do not replace it with naive MATLAB `arr(:)` writes
 
 ## Assembly workflow for agents
 
@@ -233,6 +244,8 @@ Use this mental mapping:
 - **Need field output rather than only history traces**
   - adjust the model/output settings before export
   - prefer remote post-processing if field files become very large
+  - for GUI/ParaView inspection, consider setting `model.fieldStoreIncs` and `model.fieldStoreNodes` at `.pogo-inp` generation time to cap output size
+  - if `fieldStoreNodes` samples the mesh, use point-cloud XDMF output; full tet/hex connectivity is invalid because many element nodes are absent
 
 - **Need batch studies**
   - only after one case is validated
@@ -289,6 +302,29 @@ Choose post-processing based on the physics question:
 - defect imaging / maps
 - field snapshots or movies
 
+### ParaView field export
+
+For large 2D/3D `.pogo-field` files, do not rely on interactive POGO GUI export.
+Run a headless converter on the remote host:
+
+```bash
+matlab -batch "addpath('/path/to/pogoMatlabTools-master/visual'); addpath('/path/to/pogoMatlabTools-master/loadSave'); export_pogo_field_xdmf('case/model.pogo-field', 'case/paraview_field', 'model')"
+```
+
+The converter writes:
+
+- `<case>.xdmf`
+- `<case>_points_f32.bin`
+- `<case>_u_####_f32.bin`
+- `<case>_umag_####_f32.bin`
+- `<case>_node_numbers_i32.bin`
+
+Open the `.xdmf` in ParaView. If the field was saved on a sampled node set
+using `model.fieldStoreNodes`, the output is a temporal `Polyvertex` point
+cloud. This is intentional: preserving full-element connectivity would create
+invalid cells that reference nodes absent from the field file. Use a separate
+surface/STL/mesh preview if a solid outline is needed behind the wavefield.
+
 The included post-processing demo is only a starter, not a full analysis framework.
 
 ### Large history policy
@@ -327,6 +363,7 @@ When an image is hard to interpret:
 ## Included resources
 
 - `assets/run_pogo.sh` — standard remote runner template
+- `pogoMatlabTools-master/visual/export_pogo_field_xdmf.m` — headless `.pogo-field` to ParaView XDMF + binary converter
 - `references/pogo_model_intake.md` — modeling checklist
 - `references/pogo_geometry_paradigms.md` — three major geometry/material modeling paradigms
 - `examples/matlab_multilayer_composite/` — sanitized multilayer composite example with helper functions and post-processing starter scripts

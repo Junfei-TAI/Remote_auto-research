@@ -17,3 +17,4 @@ Instructions:
 - Add consistency checks and preview plots before full runs.
 - Run one representative case before any batch expansion.
 - Use corrected POGO anisotropic packing, not a naive stiffness-matrix reshape.
+- For large `.pogo-field` visualization, use `skills/pogo-remote/pogoMatlabTools-master/visual/export_pogo_field_xdmf.m` on the remote host to create ParaView `.xdmf` + `.bin` outputs; sampled `fieldStoreNodes` should be exported as point-cloud data.

@@ -126,6 +126,8 @@ skills/
   pogo-remote/                 POGO workflow skill
     assets/
       run_pogo.sh              Standard remote POGO runner template
+    pogoMatlabTools-master/
+      visual/export_pogo_field_xdmf.m Headless ParaView XDMF/bin field exporter
     references/                Modeling paradigms, recipes, post-processing
     examples/
       matlab_multilayer_composite/
@@ -159,6 +161,12 @@ The `pogo-remote` module currently covers three major modeling paradigms:
 3. **Simple material, complex geometry**
    - geometry-first modeling with explicit vertices or parametric geometry
    - represented by `matlab_complex_geometry_skeleton/`
+
+For large 2D/3D `.pogo-field` visualization, the POGO workflow includes a
+headless ParaView export path: run `skills/pogo-remote/pogoMatlabTools-master/visual/export_pogo_field_xdmf.m`
+on the remote host to create `.xdmf` plus raw `.bin` wavefield files. When a
+model uses `fieldStoreNodes`, the exporter writes a sampled point-cloud
+wavefield instead of invalid full-mesh connectivity.
 
 ---
 

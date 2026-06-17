@@ -31,7 +31,14 @@ Classify the task first:
 5. Run one representative case first.
 6. Generate `.pogo-inp` locally or via headless remote MATLAB.
 7. Run POGO remotely.
-8. Post-process and decide: iterate model or expand batch.
+8. Post-process remotely for large `.pogo-field`/`.pogo-hist` outputs, then decide: iterate model or expand batch.
 
 ## Important rule
 For anisotropic material packing, use the corrected POGO packing pattern from the bundled reference, not a naive reshape of the stiffness matrix.
+
+For large 2D/3D field visualization, do not rely on interactive GUI conversion. Use
+`skills/pogo-remote/pogoMatlabTools-master/visual/export_pogo_field_xdmf.m` headlessly to create
+ParaView-readable `.xdmf` plus raw `.bin` files. If `model.fieldStoreNodes` was
+used, export a sampled `Polyvertex` point-cloud wavefield; full mesh
+connectivity is invalid because many element nodes were not saved in the field
+file.
